@@ -1,23 +1,28 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import MapView, { Polyline } from 'react-native-maps';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import MapView, { Marker, Callout } from 'react-native-maps';
 import polyline from '@mapbox/polyline';
 import * as Location from 'expo-location';
 
-const locations = require('./locations.json');
+const HomeScreen = ({ navigation }) => {
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [desLatitude, setDesLatitude] = useState(null);
+  const [desLongitude, setDesLongitude] = useState(null);
+  const [coords, setCoords] = useState([]);
+  const [distance, setDistance] = useState(null);
+  const [time, setTime] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-export default class HomeScreen extends React.Component {
-  state = {
-    latitude: null,
-    longitude: null,
-    desLatitude: null,
-    desLongitude: null,
-    coords: [],
-    distance: null,
-    time: null,
-  };
+  useEffect(() => {
+    // Fetch events from the server when the component mounts
+    fetchEvents();
+    getLocation();
+  }, []);
 
-  async componentDidMount() {
+  const getLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
@@ -27,40 +32,40 @@ export default class HomeScreen extends React.Component {
       }
 
       const location = await Location.getCurrentPositionAsync({});
-      this.setState({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
-
-      if (locations && locations.length > 0) {
-        const [sampleLocation] = locations;
-        this.setState(
-          {
-            desLatitude: sampleLocation.coords.latitude,
-            desLongitude: sampleLocation.coords.longitude,
-          },
-          this.mergeCoords
-        );
-      }
+      setLatitude(location.coords.latitude);
+      setLongitude(location.coords.longitude);
     } catch (error) {
       console.log('Error:', error);
     }
-  }
+  };
 
-  mergeCoords = () => {
-    const { latitude, longitude, desLatitude, desLongitude } = this.state;
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch('http://172.17.36.23:3001/getEvents');
+      const result = await response.json();
 
+      if (response.ok) {
+        setEvents(result);
+      } else {
+        console.error('Failed to fetch events:', result.message);
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    }
+  };
+
+  const mergeCoords = () => {
     const hasStartAndEnd = latitude != null && desLatitude != null;
     if (hasStartAndEnd) {
       const concatStart = `${latitude},${longitude}`;
       const concatEnd = `${desLatitude},${desLongitude}`;
-      this.getDirections(concatStart, concatEnd);
+      getDirections(concatStart, concatEnd);
     }
   };
 
-  async getDirections(startLoc, desLoc) {
+  const getDirections = async (startLoc, desLoc) => {
     try {
-      const apiKey = 'AIzaSyDcELAMQ7jNEno3GYitHGQza2O8wuye-Ok';
+      const apiKey = 'AIzaSyDcELAMQ7jNEno3GYitHGQza2O8wuye';
       const resp = await fetch(
         `https://maps.googleapis.com/maps/api/directions/json?origin=${startLoc}&destination=${desLoc}&key=${apiKey}`
       );
@@ -84,22 +89,26 @@ export default class HomeScreen extends React.Component {
       const time = distanceTime.duration.text;
 
       const points = polyline.decode(response.overview_polyline.points);
-      const coords = points.map((point) => ({
+      const newCoords = points.map((point) => ({
         latitude: point[0],
         longitude: point[1],
       }));
 
-      this.setState({ coords, distance, time });
+      setCoords(newCoords);
+      setDistance(distance);
+      setTime(time);
     } catch (error) {
       console.log('Error: ', error);
     }
-  }
+  };
 
-  render() {
-    const { latitude, longitude, coords } = this.state;
-
-    if (latitude !== null && longitude !== null) {
-      return (
+  const handleMarkerPress = (event) => {
+    setSelectedEvent(event);
+    setModalVisible(true);
+  };
+  return (
+    <View style={{ flex: 1 }}>
+      {latitude !== null && longitude !== null && (
         <MapView
           showsUserLocation
           style={{ flex: 1 }}
@@ -110,28 +119,101 @@ export default class HomeScreen extends React.Component {
             longitudeDelta: 0.0421,
           }}
         >
-          <Polyline
-            strokeWidth={2}
-            strokeColor="red"
-            coordinates={coords}
-          />
+          {/* Render markers for events */}
+          {events.map((event) => (
+            <Marker
+              key={event._id}
+              coordinate={{
+                latitude: event.location.latitude,
+                longitude: event.location.longitude,
+              }}
+              title={event.sport}
+              description={event.description}
+              onPress={() => handleMarkerPress(event)}
+            >
+              <Callout>
+                <View>
+                  <Text style={{ fontWeight: 'bold' }}>{event.sport}</Text>
+                  <Text>{event.description}</Text>
+                  {/* Add more details as needed */}
+                </View>
+              </Callout>
+            </Marker>
+          ))}
         </MapView>
-      );
-    }
+      )}
 
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>We need your permission!</Text>
-      </View>
-    );
-  }
-}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <ScrollView>
+            <Text style={{ fontWeight: 'bold', fontSize: 20 }}> ⚽  {selectedEvent?.sport}  ⚽</Text>
+            <Text>Description: {selectedEvent?.description}</Text>
+            <Text>Nombre de personnes :{selectedEvent?.numPersonsNeeded}</Text>
+            <Text>dateTime :{selectedEvent?.dateTime}</Text>
+            {/* Add more details as needed */}
+          </ScrollView>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.buttonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => navigation.navigate('PostEvent')}
+      >
+        <Text style={styles.buttonText}>ADD</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
+  addButton: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    backgroundColor: 'blue',
+    padding: 15,
+    borderRadius: 10,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    flex: 0.5, // Set the desired flex value
+    justifyContent: 'flex-end',
+    backgroundColor: 'white',
+    padding: 20,
+    marginTop:400
+  },
+  modalView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 20,
+  },
+  closeButton: {
+    backgroundColor: 'blue',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
+
+export default HomeScreen;
+//https://rn.mobile.ant.design/components/tab-bar/

@@ -6,13 +6,15 @@ import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import HomePage from './screens/HomePage';
 import RegisterScreen from './screens/RegisterScreen';
+import AddEventScreen from './screens/AddEventScreen';
 
 const AppNavigator = createStackNavigator(
   {
     Login: LoginScreen,
     Home: HomeScreen,
     Pagehome:HomePage,
-    Signup:RegisterScreen
+    Signup:RegisterScreen,
+    PostEvent: AddEventScreen
   },
   {
     initialRouteName: 'Pagehome',
