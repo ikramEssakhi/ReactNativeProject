@@ -1,6 +1,7 @@
 // screens/LoginScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert,Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -9,7 +10,7 @@ const LoginScreen = ({ navigation }) => {
   
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://172.17.36.23:3001/login', {
+      const response = await fetch('http://192.168.1.11:3001/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -21,6 +22,14 @@ const LoginScreen = ({ navigation }) => {
         const result = await response.json();
         // Display success message or user data
         Alert.alert('Success', result.message);
+
+       // Store user object in AsyncStorage
+       const userObject = {
+        email,
+        // Add other relevant user details from the response if needed
+      };
+      await AsyncStorage.setItem('user', JSON.stringify(userObject));
+
         // Navigate to the "Home" screen
         navigation.navigate('Home');
       } else {

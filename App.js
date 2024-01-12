@@ -7,6 +7,8 @@ import HomeScreen from './screens/HomeScreen';
 import HomePage from './screens/HomePage';
 import RegisterScreen from './screens/RegisterScreen';
 import AddEventScreen from './screens/AddEventScreen';
+import RequestsList from './screens/RequestsList';
+import MyEvents from './screens/MyEvents';
 
 const AppNavigator = createStackNavigator(
   {
@@ -14,7 +16,9 @@ const AppNavigator = createStackNavigator(
     Home: HomeScreen,
     Pagehome:HomePage,
     Signup:RegisterScreen,
-    PostEvent: AddEventScreen
+    PostEvent: AddEventScreen,
+    Demandes: RequestsList,
+    MyEvents:MyEvents
   },
   {
     initialRouteName: 'Pagehome',

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import { ScrollView, View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AddEventScreen = ({ navigation }) => {
     const [sport, setSport] = useState('');
@@ -12,7 +13,10 @@ const AddEventScreen = ({ navigation }) => {
   
     const handleAddEvent = async () => {
       try {
-        const response = await fetch('http://172.17.36.23:3001/addEvent', {
+        // Retrieve user email from AsyncStorage
+        const userEmail = await AsyncStorage.getItem('user');
+  
+        const response = await fetch('http://192.168.1.11:3001/addEvent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -26,6 +30,7 @@ const AddEventScreen = ({ navigation }) => {
               latitude: location.latitude,
               longitude: location.longitude,
             },
+            userEmail, // Include the user's email in the request
           }),
         });
   
@@ -44,6 +49,7 @@ const AddEventScreen = ({ navigation }) => {
         // Handle network or other errors
       }
     };
+  
   
     const handleMapPress = (event) => {
       const { coordinate } = event.nativeEvent;
