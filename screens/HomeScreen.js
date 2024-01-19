@@ -46,7 +46,7 @@
 
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://192.168.1.11:3001/getEvents');
+        const response = await fetch('http://192.168.1.9:3001/getEvents');
         const result = await response.json();
 
         if (response.ok) {
@@ -126,7 +126,7 @@
         const userObject = JSON.parse(userEmail);
         const { email } = userObject;
 
-        const response = await fetch('http://192.168.1.11:3001/sendRequestToJoin', {
+        const response = await fetch('http://192.168.1.9:3001/sendRequestToJoin', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -240,7 +240,7 @@
 
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => navigation.navigate('PostEvent')}
+          onPress={() => navigation.navigate('profile')}
         >
           <Text style={styles.buttonText}>ADD</Text>
         </TouchableOpacity>

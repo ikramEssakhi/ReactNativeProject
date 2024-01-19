@@ -28,7 +28,7 @@ const MyEvents = () => {
     // Fetch events associated with the user's email
     const fetchUserEvents = async () => {
       try {
-        const response = await fetch(`http://192.168.1.11:3001/getEventsByEMail?userEmail=${userEmail}`);
+        const response = await fetch(`http://192.168.1.9:3001/getEventsByEMail?userEmail=${userEmail}`);
         console.log('Response Status:', response.status);
 
         if (!response.ok) {

@@ -17,7 +17,7 @@ const RequestsList = () => {
   const fetchMyEvents = async () => {
     try {
       // Fetch events associated with the user's email
-      const response = await fetch('http://192.168.1.11:3001/getEvents'); // Update the endpoint
+      const response = await fetch('http://192.168.1.9:3001/getEvents'); // Update the endpoint
       console.log('Response Status:', response.status);
 
       if (!response.ok) {
@@ -40,14 +40,14 @@ const RequestsList = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch('http://192.168.1.11:3001/getRequests'); // Update the endpoint
+      const response = await fetch('http://192.168.1.9:3001/getRequests'); // Update the endpoint
       const result = await response.json();
 
       if (response.ok) {
         // Fetch user details for each request
         const requestsWithUsers = await Promise.all(
           result.map(async (request) => {
-            const userResponse = await fetch(`http://192.168.1.11:3001/getUser/${request.userId}`);
+            const userResponse = await fetch(`http://192.168.1.9:3001/getUser/${request.userId}`);
             const userResult = await userResponse.json();
 
             if (userResponse.ok) {
@@ -68,10 +68,9 @@ const RequestsList = () => {
       console.error('Error fetching requests:', error);
     }
   };
-
   const handleAccept = async (eventId, userId) => {
     try {
-      const response = await fetch('http://192.168.1.11:3001/acceptRequest', {
+      const response = await fetch('http://192.168.1.9:3001/acceptRequest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,8 +83,10 @@ const RequestsList = () => {
       if (response.ok) {
         // Refresh the requests list after accepting
         await fetchRequests();
+        console.log('Accept request successful:', result.message);
       } else {
         Alert.alert('Error', result.message);
+        console.error('Error accepting request:', result.message);
       }
     } catch (error) {
       console.error('Error accepting request:', error);
@@ -94,7 +95,7 @@ const RequestsList = () => {
   
   const handleRefuse = async (eventId, userId) => {
     try {
-      const response = await fetch('http://192.168.1.11:3001/refuseRequest', {
+      const response = await fetch('http://192.168.1.9:3001/refuseRequest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,13 +108,16 @@ const RequestsList = () => {
       if (response.ok) {
         // Refresh the requests list after refusing
         await fetchRequests();
+        console.log('Refuse request successful:', result.message);
       } else {
         Alert.alert('Error', result.message);
+        console.error('Error refusing request:', result.message);
       }
     } catch (error) {
       console.error('Error refusing request:', error);
     }
   };
+  
   
 
   const renderItem = ({ item }) => {
@@ -138,18 +142,21 @@ const RequestsList = () => {
           )}
           <Text>{`Status: ${item.status}`}</Text>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.acceptButton}
-              onPress={() => handleAccept(item.eventId, item.userId)}
-            >
-              <Text style={styles.buttonText}>Accept</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.refuseButton}
-              onPress={() => handleRefuse(item.eventId, item.userId)}
-            >
-              <Text style={styles.buttonText}>Refuse</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+  style={[styles.acceptButton, item.status === 'Accepted' || item.status === 'Refused' ? styles.disabledButton : null]}
+  onPress={() => handleAccept(item.eventId, item.userId)}
+  disabled={item.status === 'Accepted' || item.status === 'Refused'}
+>
+  <Text style={styles.buttonText}>Accept</Text>
+</TouchableOpacity>
+<TouchableOpacity
+  style={[styles.refuseButton, item.status === 'Accepted' || item.status === 'Refused' ? styles.disabledButton : null]}
+  onPress={() => handleRefuse(item.eventId, item.userId)}
+  disabled={item.status === 'Accepted' || item.status === 'Refused'}
+>
+  <Text style={styles.buttonText}>Refuse</Text>
+</TouchableOpacity>
+
           </View>
           {/* Add more details as needed */}
         </View>
@@ -212,6 +219,11 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
   },
+  disabledButton: {
+    backgroundColor: 'gray', // You can set a different color or style for disabled buttons
+    opacity: 0.7, // Adjust the opacity to visually indicate that the button is disabled
+  },
+  
 });
 
 export default RequestsList;

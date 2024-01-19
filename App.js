@@ -9,6 +9,8 @@ import RegisterScreen from './screens/RegisterScreen';
 import AddEventScreen from './screens/AddEventScreen';
 import RequestsList from './screens/RequestsList';
 import MyEvents from './screens/MyEvents';
+import Requests from './screens/file';
+import ProfileScreen from './screens/ProfileView';
 
 const AppNavigator = createStackNavigator(
   {
@@ -18,7 +20,10 @@ const AppNavigator = createStackNavigator(
     Signup:RegisterScreen,
     PostEvent: AddEventScreen,
     Demandes: RequestsList,
-    MyEvents:MyEvents
+    MyEvents:MyEvents,
+    profile:ProfileScreen,
+    req:Requests,
+    
   },
   {
     initialRouteName: 'Pagehome',

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Picker } from '@react-native-picker/picker';
-import { ScrollView, View, Text, TextInput, Button, StyleSheet, Image, Alert } from 'react-native';
-
+import { ScrollView, View, Text, TextInput, Button, StyleSheet, Image, Alert} from 'react-native';
+import { Slider } from 'react-native-elements';
 const RegisterScreen = ({ navigation }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -11,10 +11,12 @@ const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [competence, setCompetence] = useState(50); // Initial competence level
+  const [about, setAbout] = useState('');
 
   const handleRegister = async () => {
     try {
-      const response = await fetch('http://192.168.1.11:3001/register', {
+      const response = await fetch('http://192.168.1.9:3001/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,6 +29,10 @@ const RegisterScreen = ({ navigation }) => {
           phoneNumber,
           sex,
           favoriteSport,
+          competence,
+          about,
+          
+
         }),
       });
 
@@ -97,7 +103,30 @@ const RegisterScreen = ({ navigation }) => {
           <Picker.Item label="Cycling" value="cycling" />
         </Picker>
       </View>
+   {/* Slider for Competence Level */}
+   <View style={styles.sliderContainer}>
+        <Text style={styles.sliderLabel}>Competence Level:</Text>
+        <Slider
+          style={styles.slider}
+          value={competence}
+          minimumValue={0}
+          maximumValue={100}
+          thumbTintColor="orange" 
+  minimumTrackTintColor="orange" 
+  thumbStyle={{ width: 10, height: 10 }}
 
+          onValueChange={(value) => setCompetence(value)}
+        />
+        <Text>{Math.round(competence)}%</Text>
+      </View>
+      <TextInput
+        style={styles.textarea}
+        placeholder="Tell us about yourself..."
+        multiline={true}
+        numberOfLines={4}
+        value={about}
+        onChangeText={setAbout}
+      />
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -163,6 +192,31 @@ const styles = StyleSheet.create({
   },
   pickerItem: {
     color: 'gray',
+  },
+  sliderContainer: {
+    marginVertical: 20,
+  },
+  sliderLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+    // Reduce the size of the slider handle (thumb)
+    thumbStyle: {
+      width: 5,
+      height: 5,
+      borderRadius: 10,
+    },
+  },
+  textarea: {
+    height: 80, // You can adjust the height as needed
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 16,
+    paddingHorizontal: 10,
   },
 });
 
