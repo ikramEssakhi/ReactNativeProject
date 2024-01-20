@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const MyEvents = () => {
@@ -11,7 +11,6 @@ const MyEvents = () => {
     const fetchUserEmail = async () => {
       try {
         const storedEmail = await AsyncStorage.getItem('user');
-        console.log('Stored Email:', storedEmail);
 
         if (storedEmail) {
           setUserEmail(storedEmail);
@@ -28,15 +27,13 @@ const MyEvents = () => {
     // Fetch events associated with the user's email
     const fetchUserEvents = async () => {
       try {
-        const response = await fetch(`http://192.168.1.9:3001/getEventsByEMail?userEmail=${userEmail}`);
-        console.log('Response Status:', response.status);
+        const response = await fetch(`http://192.168.137.250:3001/getEventsByEMail?userEmail=${userEmail}`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const events = await response.json();
-        console.log('Fetched events:', events);
 
         // Filter events based on the user's email
         const userEvents = events.filter((event) => {
@@ -47,12 +44,9 @@ const MyEvents = () => {
             JSON.parse(userEmail).email :
             null;
 
-          console.log('Event user email:', eventUserEmail);
-          console.log('User email:', storedUserEmail);
           return eventUserEmail === storedUserEmail;
         });
 
-        console.log('User events:', userEvents);
         setUserEvents(userEvents);
       } catch (error) {
         console.error('Error fetching user events:', error.message);
@@ -64,18 +58,32 @@ const MyEvents = () => {
     }
   }, [userEmail]);
 
+  // Sport image mapping
+  const sportImages = {
+    football: require('./football-2-svgrepo-com.png'),
+    basketball: require('./basketball-svgrepo-com.png'),
+    volleyball: require('./volleyball-svgrepo-com.png'),
+    // Add more sports as needed
+  };
+
   return (
-    <View>
+    <View style={styles.container}>
       <Text style={styles.header}>My Events</Text>
       <FlatList
         data={userEvents}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View style={styles.eventContainer}>
-            <Text style={styles.eventText}>Id: {item._id}</Text>
-            <Text style={styles.eventText}>Sport: {item.sport}</Text>
-            <Text style={styles.eventText}>Description: {item.description}</Text>
-            {/* Add more event details as needed */}
+            <View style={styles.eventHeader}>
+              <Image style={styles.image} source={sportImages[item.sport.toLowerCase()]} />
+              <Text style={styles.eventHeaderText}>{item.sport}</Text>
+            </View>
+            <Text style={styles.eventText}>{item.description}</Text>
+            <Text style={styles.eventText}>{item.numPersonsNeeded}</Text>
+            <Text style={styles.eventText}>{item.dateTime}</Text>
+            {/* <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Join Event</Text>
+            </TouchableOpacity> */}
           </View>
         )}
       />
@@ -84,18 +92,55 @@ const MyEvents = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
   header: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 16,
   },
   eventContainer: {
-    backgroundColor: 'lightblue',
-    padding: 10,
-    marginBottom: 10,
+    backgroundColor: 'white',
     borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: 'black',
+    shadowOpacity: 0.2,
+    shadowOffset: {
+      height: 1,
+      width: -2,
+    },
+    elevation: 2,
+  },
+  eventHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  image: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 8,
+  },
+  eventHeaderText: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   eventText: {
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  button: {
+    backgroundColor: 'green',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
     fontSize: 16,
   },
 });

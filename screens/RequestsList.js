@@ -1,6 +1,6 @@
 // RequestsList.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RequestsList = () => {
@@ -17,7 +17,7 @@ const RequestsList = () => {
   const fetchMyEvents = async () => {
     try {
       // Fetch events associated with the user's email
-      const response = await fetch('http://192.168.1.9:3001/getEvents'); // Update the endpoint
+      const response = await fetch('http://192.168.137.250:3001/getEvents'); // Update the endpoint
       console.log('Response Status:', response.status);
 
       if (!response.ok) {
@@ -40,14 +40,14 @@ const RequestsList = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch('http://192.168.1.9:3001/getRequests'); // Update the endpoint
+      const response = await fetch('http://192.168.137.250:3001/getRequests'); // Update the endpoint
       const result = await response.json();
 
       if (response.ok) {
         // Fetch user details for each request
         const requestsWithUsers = await Promise.all(
           result.map(async (request) => {
-            const userResponse = await fetch(`http://192.168.1.9:3001/getUser/${request.userId}`);
+            const userResponse = await fetch(`http://192.168.137.250:3001/getUser/${request.userId}`);
             const userResult = await userResponse.json();
 
             if (userResponse.ok) {
@@ -70,7 +70,7 @@ const RequestsList = () => {
   };
   const handleAccept = async (eventId, userId) => {
     try {
-      const response = await fetch('http://192.168.1.9:3001/acceptRequest', {
+      const response = await fetch('http://192.168.137.250:3001/acceptRequest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ const RequestsList = () => {
   
   const handleRefuse = async (eventId, userId) => {
     try {
-      const response = await fetch('http://192.168.1.9:3001/refuseRequest', {
+      const response = await fetch('http://192.168.137.250:3001/refuseRequest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,54 +118,61 @@ const RequestsList = () => {
     }
   };
   
-  
+  const getAvatarImage = (sex) => {
+    return sex === 'male'
+      ? require('./male-avatar-boy-face-man-user-9-svgrepo-com.png')
+      : require('./female-avatar-girl-face-woman-user-2-svgrepo-com.png');
+  };
 
   const renderItem = ({ item }) => {
-    // Check if the event ID exists in myEvents
     const isMyEvent = myEvents.some((event) => event._id === item.eventId);
   
-    // Display the request only if it's associated with the user's events
-    if (isMyEvent) {
-      return (
-        <View style={styles.requestItem}>
-          <Text>{`Event ID: ${item.eventId}`}</Text>
-          <Text>{`User ID: ${item.userId}`}</Text>
-          {item.user && (
-            <View>
-              <Text>{`User Email: ${item.user.email}`}</Text>
-              <Text>{`User First Name: ${item.user.firstName}`}</Text>
-              <Text>{`User Last Name: ${item.user.lastName}`}</Text>
-              <Text>{`User Phone Number: ${item.user.phoneNumber}`}</Text>
-              <Text>{`User Favorite Sport: ${item.user.favoriteSport}`}</Text>
-              {/* Add more user details as needed */}
+    return (
+      <TouchableOpacity style={styles.itemContainer}>
+        <View style={styles.itemBox}>
+          <Image style={styles.itemImage} source={getAvatarImage(item.user.sex)} />
+          <View style={styles.itemInfo}>
+            <Text style={styles.itemName}>{`${item.user.firstName} ${item.user.lastName}`}</Text>
+            <Text>{`Event ID: ${item.eventId}`}</Text>
+            <Text>{`User ID: ${item.userId}`}</Text>
+            <Text>{`Status: ${item.status}`}</Text>
+            {item.user && (
+              <View style={styles.userInfo}>
+                <Text>{`User Email: ${item.user.email}`}</Text>
+                <Text>{`User Phone Number: ${item.user.phoneNumber}`}</Text>
+                <Text>{`User Favorite Sport: ${item.user.favoriteSport}`}</Text>
+              </View>
+            )}
+            <View style={styles.itemRow}>
+              <TouchableOpacity
+                style={[
+                  styles.itemIconContainer,
+                  { backgroundColor: item.status === 'Accepted' ? 'lightgreen' : 'white' },
+                ]}
+                onPress={() => handleAccept(item.eventId, item.userId)}
+                disabled={item.status === 'Accepted' || item.status === 'Refused'}
+              >
+                <Image style={styles.itemIcon} source={require('./like-svgrepo-com.png')} />
+                <Text style={styles.itemIconText}>Accept</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.itemIconContainer,
+                  { backgroundColor: item.status === 'Refused' ? 'lightcoral' : 'white' },
+                ]}
+                onPress={() => handleRefuse(item.eventId, item.userId)}
+                disabled={item.status === 'Accepted' || item.status === 'Refused'}
+              >
+                <Image style={styles.itemIcon} source={require('./dislike-svgrepo-com.png')} />
+                <Text style={styles.itemIconText}>Refuse</Text>
+              </TouchableOpacity>
             </View>
-          )}
-          <Text>{`Status: ${item.status}`}</Text>
-          <View style={styles.buttonContainer}>
-          <TouchableOpacity
-  style={[styles.acceptButton, item.status === 'Accepted' || item.status === 'Refused' ? styles.disabledButton : null]}
-  onPress={() => handleAccept(item.eventId, item.userId)}
-  disabled={item.status === 'Accepted' || item.status === 'Refused'}
->
-  <Text style={styles.buttonText}>Accept</Text>
-</TouchableOpacity>
-<TouchableOpacity
-  style={[styles.refuseButton, item.status === 'Accepted' || item.status === 'Refused' ? styles.disabledButton : null]}
-  onPress={() => handleRefuse(item.eventId, item.userId)}
-  disabled={item.status === 'Accepted' || item.status === 'Refused'}
->
-  <Text style={styles.buttonText}>Refuse</Text>
-</TouchableOpacity>
-
           </View>
-          {/* Add more details as needed */}
         </View>
-      );
-    } else {
-      // Event not associated with the user, return null to render nothing
-      return null;
-    }
+      </TouchableOpacity>
+    );
   };
+  
 
   return (
     <View style={styles.container}>
@@ -222,6 +229,60 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: 'gray', // You can set a different color or style for disabled buttons
     opacity: 0.7, // Adjust the opacity to visually indicate that the button is disabled
+  },
+  itemContainer: {
+    marginVertical: 10,
+  },
+  itemBox: {
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    padding: 10,
+    borderRadius: 5,
+    shadowColor: 'black',
+    shadowOpacity: 0.2,
+    shadowOffset: {
+      height: 1,
+      width: -2,
+    },
+    elevation: 2,
+  },
+  itemImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginRight: 10,
+  },
+  itemInfo: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+  itemName: {
+    fontSize: 18,
+    color: '#333',
+    marginBottom: 5,
+  },
+  userInfo: {
+    marginVertical: 5,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 10,
+  },
+  itemIconContainer: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 5,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'gray',
+  },
+  itemIcon: {
+    width: 30,
+    height: 30,
+  },
+  itemIconText: {
+    color: 'gray',
   },
   
 });

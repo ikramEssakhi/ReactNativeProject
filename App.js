@@ -9,8 +9,9 @@ import RegisterScreen from './screens/RegisterScreen';
 import AddEventScreen from './screens/AddEventScreen';
 import RequestsList from './screens/RequestsList';
 import MyEvents from './screens/MyEvents';
-import Requests from './screens/file';
 import ProfileScreen from './screens/ProfileView';
+import ListWithIcon from './screens/ListWithIcon';
+import Comments from './screens/Comments';
 
 const AppNavigator = createStackNavigator(
   {
@@ -22,7 +23,8 @@ const AppNavigator = createStackNavigator(
     Demandes: RequestsList,
     MyEvents:MyEvents,
     profile:ProfileScreen,
-    req:Requests,
+    req:ListWithIcon,
+    comm:Comments
     
   },
   {
