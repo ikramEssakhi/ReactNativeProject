@@ -3,6 +3,7 @@ import { Picker } from '@react-native-picker/picker';
 import { ScrollView, View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker'; // Import DateTimePicker
 
 const AddEventScreen = ({ navigation }) => {
     const [sport, setSport] = useState('');
@@ -10,13 +11,30 @@ const AddEventScreen = ({ navigation }) => {
     const [numPersonsNeeded, setNumPersonsNeeded] = useState('');
     const [dateTime, setDateTime] = useState('');
     const [location, setLocation] = useState(null);
+    const [showDateTimePicker, setShowDateTimePicker] = useState(false);
+    const handleDateTimeChange = (event, selectedDate) => {
+      setShowDateTimePicker(false);
+  
+      // Format the selected date without the time component
+      const formattedDate = selectedDate.toISOString().split('T')[0];
+      setDateTime(formattedDate);
+    };
+    const showDateTimePickerModal = () => {
+      setShowDateTimePicker(true);
+    };
   
     const handleAddEvent = async () => {
       try {
+
+        if (!sport || !description || !numPersonsNeeded || !dateTime || !location) {
+          Alert.alert('Error', 'Please fill in all the fields before adding an event');
+          return;
+        }
+  
         // Retrieve user email from AsyncStorage
         const userEmail = await AsyncStorage.getItem('user');
   
-        const response = await fetch('http://192.168.137.250:3001/addEvent', {
+        const response = await fetch('http://192.168.1.104:3001/addEvent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -39,7 +57,12 @@ const AddEventScreen = ({ navigation }) => {
         if (response.ok) {
           console.log('Event added successfully:', result);
           Alert.alert('Event added successfully', result.message);
+          setLocation(null);
+
           // Handle successful event addition, e.g., navigate to another screen
+          setTimeout(() => {
+            navigation.navigate('Home'); // Assuming 'Login' is the name of your Login screen
+          }, 1500);
         } else {
           console.error('Event addition failed:', result.message);
           // Handle event addition failure, e.g., display an error message
@@ -78,7 +101,7 @@ const AddEventScreen = ({ navigation }) => {
         </View>
         <TextInput
           style={styles.input}
-          placeholder="Description"
+          placeholder="Description : Like the specific hour"
           value={description}
           onChangeText={setDescription}
         />
@@ -89,12 +112,21 @@ const AddEventScreen = ({ navigation }) => {
           onChangeText={setNumPersonsNeeded}
           keyboardType="numeric"
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Date and Time"
-          value={dateTime}
-          onChangeText={setDateTime}
+       <TextInput
+        style={styles.input}
+        placeholder="Date and Time"
+        value={dateTime}
+        onTouchStart={showDateTimePickerModal} // Open DateTimePicker on touch
+      />
+      {showDateTimePicker && (
+        <DateTimePicker
+          value={new Date()} // Set the initial value to the current date and time
+          mode="date" // You can use "date" or "time" mode based on your requirement
+          //is24Hour={true}
+          display="default"
+          onChange={handleDateTimeChange}
         />
+      )}
         <View style={styles.mapContainer}>
           <MapView
             style={styles.map}

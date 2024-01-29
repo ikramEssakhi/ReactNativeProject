@@ -13,10 +13,16 @@ const RegisterScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [competence, setCompetence] = useState(50); // Initial competence level
   const [about, setAbout] = useState('');
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(true); // New state for email validation
+
 
   const handleRegister = async () => {
+    // Validate the form
+  const isFormValid = validateForm();
+  if (isFormValid) {
     try {
-      const response = await fetch('http://192.168.137.250:3001/register', {
+      const response = await fetch('http://192.168.1.104:3001/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,6 +49,9 @@ const RegisterScreen = ({ navigation }) => {
         Alert.alert('Registration successful', result.message);
 
         // Handle successful registration, e.g., navigate to another screen
+        setTimeout(() => {
+          navigation.navigate('Login'); // Assuming 'Login' is the name of your Login screen
+        }, 1500);
       } else {
         console.error('Registration failed:', result.message);
         // Handle registration failure, e.g., display an error message
@@ -50,10 +59,28 @@ const RegisterScreen = ({ navigation }) => {
     } catch (error) {
       console.error('Registration error:', error);
       // Handle network or other errors
+    }}else{
+       // Display an error message indicating that all fields must be filled
+    Alert.alert('Error', 'Please fill in all required fields.');
     }
   };
 
+  const validateForm = () => {
+    const requiredFields = [firstName, lastName, phoneNumber, sex, favoriteSport, email, password, confirmPassword];
+    const isAnyFieldEmpty = requiredFields.some(field => field === '');
 
+    // Update the email validation status
+    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    setIsEmailValid(isEmailValid);
+
+    // Update the validation status
+    setIsFormValid(!isAnyFieldEmpty && isEmailValid);
+
+    return !isAnyFieldEmpty && isEmailValid;
+  };
+
+  
+  
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Image source={require('./logo3.gif')} style={styles.image} />
@@ -134,6 +161,9 @@ const RegisterScreen = ({ navigation }) => {
         onChangeText={setEmail}
         keyboardType="email-address"
       />
+       {!isEmailValid && (
+        <Text style={styles.errorText}>Please check the email format</Text>
+      )}
       <TextInput
         style={styles.input}
         placeholder="Password"
@@ -148,7 +178,7 @@ const RegisterScreen = ({ navigation }) => {
         value={confirmPassword}
         onChangeText={setConfirmPassword}
       />
-      <Button title="Register" onPress={handleRegister} color="black" />
+<Button title="Register" onPress={handleRegister} color="black" />
     </ScrollView>
   );
 };
@@ -217,6 +247,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 16,
     paddingHorizontal: 10,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 3,
   },
 });
 

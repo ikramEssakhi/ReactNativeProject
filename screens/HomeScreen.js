@@ -22,12 +22,15 @@ const HomeScreen = ({ navigation }) => {
   const [searchText, setSearchText] = useState('');
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [eventsChanged, setEventsChanged] = useState(false);
+
 
   useEffect(() => {
     fetchEvents();
     getLocation();
     loadCurrentUser();
-  }, []);
+  }, [eventsChanged]);
+
 
   const getLocation = async () => {
     try {
@@ -48,7 +51,7 @@ const HomeScreen = ({ navigation }) => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://192.168.137.250:3001/getEvents');
+      const response = await fetch('http://192.168.1.104:3001/getEvents');
       const result = await response.json();
 
       if (response.ok) {
@@ -61,6 +64,7 @@ const HomeScreen = ({ navigation }) => {
       console.error('Error fetching events:', error);
     }
   };
+
 
   const calculateShortestPath = async (event) => {
     if (latitude != null && longitude != null) {
@@ -126,7 +130,7 @@ const HomeScreen = ({ navigation }) => {
       const userObject = JSON.parse(userEmail);
       const { email } = userObject;
 
-      const response = await fetch('http://192.168.137.250:3001/sendRequestToJoin', {
+      const response = await fetch('http://192.168.1.104:3001/sendRequestToJoin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

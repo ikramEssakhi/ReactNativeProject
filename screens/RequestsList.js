@@ -17,7 +17,7 @@ const RequestsList = () => {
   const fetchMyEvents = async () => {
     try {
       // Fetch events associated with the user's email
-      const response = await fetch('http://192.168.137.250:3001/getEvents'); // Update the endpoint
+      const response = await fetch('http://192.168.1.104:3001/getEvents'); // Update the endpoint
       console.log('Response Status:', response.status);
 
       if (!response.ok) {
@@ -40,14 +40,14 @@ const RequestsList = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch('http://192.168.137.250:3001/getRequests'); // Update the endpoint
+      const response = await fetch('http://192.168.1.104:3001/getRequests'); // Update the endpoint
       const result = await response.json();
 
       if (response.ok) {
         // Fetch user details for each request
         const requestsWithUsers = await Promise.all(
           result.map(async (request) => {
-            const userResponse = await fetch(`http://192.168.137.250:3001/getUser/${request.userId}`);
+            const userResponse = await fetch(`http://192.168.1.104:3001/getUser/${request.userId}`);
             const userResult = await userResponse.json();
 
             if (userResponse.ok) {
@@ -70,7 +70,7 @@ const RequestsList = () => {
   };
   const handleAccept = async (eventId, userId) => {
     try {
-      const response = await fetch('http://192.168.137.250:3001/acceptRequest', {
+      const response = await fetch('http://192.168.1.104:3001/acceptRequest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ const RequestsList = () => {
   
   const handleRefuse = async (eventId, userId) => {
     try {
-      const response = await fetch('http://192.168.137.250:3001/refuseRequest', {
+      const response = await fetch('http://192.168.1.104:3001/refuseRequest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

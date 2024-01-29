@@ -22,7 +22,7 @@ const ProfileScreen = () => {
       console.log('User Email:', userEmail);
   
       // Fetch user details based on the email
-      const response = await fetch(`http://192.168.137.250:3001/getUser/${userEmail}`);
+      const response = await fetch(`http://192.168.1.104:3001/getUser/${userEmail}`);
       const userData = await response.json();
   
       if (response.ok) {
