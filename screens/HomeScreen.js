@@ -51,7 +51,7 @@ const HomeScreen = ({ navigation }) => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://192.168.1.104:3001/getEvents');
+      const response = await fetch('http://192.168.43.193:3001/getEvents');
       const result = await response.json();
 
       if (response.ok) {
@@ -130,7 +130,7 @@ const HomeScreen = ({ navigation }) => {
       const userObject = JSON.parse(userEmail);
       const { email } = userObject;
 
-      const response = await fetch('http://192.168.1.104:3001/sendRequestToJoin', {
+      const response = await fetch('http://192.168.43.193:3001/sendRequestToJoin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

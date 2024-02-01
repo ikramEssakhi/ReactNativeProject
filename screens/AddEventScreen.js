@@ -34,7 +34,7 @@ const AddEventScreen = ({ navigation }) => {
         // Retrieve user email from AsyncStorage
         const userEmail = await AsyncStorage.getItem('user');
   
-        const response = await fetch('http://192.168.1.104:3001/addEvent', {
+        const response = await fetch('http://192.168.43.193:3001/addEvent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

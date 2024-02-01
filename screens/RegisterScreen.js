@@ -22,7 +22,7 @@ const RegisterScreen = ({ navigation }) => {
   const isFormValid = validateForm();
   if (isFormValid) {
     try {
-      const response = await fetch('http://192.168.1.104:3001/register', {
+      const response = await fetch('http://192.168.43.193:3001/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
